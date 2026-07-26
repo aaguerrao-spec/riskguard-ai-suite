@@ -16,7 +16,7 @@
 # next.js
 /.next/
 /out/
-/.gh-pages/
+/.api-backup-build/
 /uploads/
 
 # production

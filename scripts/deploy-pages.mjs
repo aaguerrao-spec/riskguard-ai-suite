@@ -1,11 +1,13 @@
 import { execSync } from "node:child_process";
-import { cpSync, existsSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = path.join(ROOT, "out");
 const DEPLOY_DIR = path.join(ROOT, ".gh-pages");
+const API_DIR = path.join(ROOT, "src/app/api");
+const API_BACKUP = path.join(ROOT, ".api-backup-build");
 const REMOTE_URL = "https://github.com/aaguerrao-spec/aaguerrao-spec.github.io.git";
 const BRANCH = "main";
 
@@ -14,11 +16,26 @@ function run(command, options = {}) {
     cwd: options.cwd ?? ROOT,
     stdio: "inherit",
     shell: true,
+    env: { ...process.env, ...(options.env ?? {}), STATIC_EXPORT: "true" },
   });
 }
 
 function runCapture(command, cwd) {
   return execSync(command, { cwd, encoding: "utf8", shell: true }).trim();
+}
+
+function hideApiRoutesForStaticBuild() {
+  if (!existsSync(API_DIR)) return;
+  if (existsSync(API_BACKUP)) rmSync(API_BACKUP, { recursive: true, force: true });
+  renameSync(API_DIR, API_BACKUP);
+  console.log("API routes temporarily excluded for static export.");
+}
+
+function restoreApiRoutesAfterStaticBuild() {
+  if (!existsSync(API_BACKUP)) return;
+  if (existsSync(API_DIR)) rmSync(API_DIR, { recursive: true, force: true });
+  renameSync(API_BACKUP, API_DIR);
+  console.log("API routes restored.");
 }
 
 function prepareDeployRepo() {
@@ -50,8 +67,14 @@ function syncBuildToDeployDir() {
   writeFileSync(path.join(DEPLOY_DIR, ".nojekyll"), "");
 }
 
-console.log("Building static export...");
-run("npm run build");
+console.log("Building static export for GitHub Pages...");
+hideApiRoutesForStaticBuild();
+
+try {
+  run("npm run build");
+} finally {
+  restoreApiRoutesAfterStaticBuild();
+}
 
 if (!existsSync(OUT_DIR)) {
   throw new Error("Build failed: out/ directory was not created.");
@@ -74,7 +97,7 @@ if (!status) {
 }
 
 const timestamp = new Date().toISOString().slice(0, 16).replace("T", " ");
-run(`git commit -m "fix: repair dashboard process flow for GitHub Pages"`, {
+run(`git commit -m "deploy: GitHub Pages sync ${timestamp}"`, {
   cwd: DEPLOY_DIR,
 });
 

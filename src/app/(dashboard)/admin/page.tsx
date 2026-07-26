@@ -8,7 +8,8 @@ import {
   fetchMenu,
   saveDraft,
 } from "@/lib/menu/load-menu";
-import { downloadDeployBundle, publishMenuToGitHub } from "@/lib/github/publish";
+import { downloadDeployBundle, publishMenuToGitHub, publishMenuViaApi } from "@/lib/github/publish";
+import { getPublicSiteUrl } from "@/lib/site-config";
 import type { MenuItem, MenuIconName, PendingUpload, ToolAccent } from "@/lib/menu/types";
 
 const ICONS: MenuIconName[] = [
@@ -135,19 +136,32 @@ export default function AdminPage() {
   };
 
   const publishOnline = async () => {
-    if (!menu || !token.trim()) {
-      setStatus("Necesitas un token de GitHub con permiso repo.");
-      return;
-    }
+    if (!menu) return;
 
     setBusy(true);
-    setStatus("Publicando en GitHub Pages...");
+    setStatus("Publicando...");
     try {
+      const apiResult = await publishMenuViaApi(menu, uploads);
+      if (apiResult.mode === "api") {
+        clearDraft();
+        setUploads([]);
+        const site = getPublicSiteUrl() || window.location.origin;
+        setStatus(`${apiResult.message} Sitio: ${site}`);
+        await reload();
+        return;
+      }
+
+      if (!token.trim()) {
+        setStatus("Configura GITHUB_TOKEN en Vercel o ingresa un token de GitHub con permiso repo.");
+        return;
+      }
+
       sessionStorage.setItem(TOKEN_KEY, token.trim());
       await publishMenuToGitHub(menu, uploads, token.trim());
       clearDraft();
       setUploads([]);
-      setStatus("Publicado. El menú se actualizará en https://aaguerrao-spec.github.io/ en unos segundos.");
+      const site = getPublicSiteUrl() || "https://aaguerrao-spec.github.io";
+      setStatus(`Publicado en GitHub Pages. El menu se actualizara en ${site} en unos segundos.`);
       await reload();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Error al publicar.");
@@ -171,16 +185,18 @@ export default function AdminPage() {
           Administración del menú
         </h1>
         <p className="mt-[6px] max-w-3xl text-[11.5px] leading-normal text-[#4f6078]">
-          Sube archivos HTML, edita el menú y publícalo en{" "}
+          Sube archivos HTML, edita el menu y publícalo. En Vercel usa{" "}
+          <code className="text-[#6e8098]">GITHUB_TOKEN</code> (serverless). En GitHub Pages usa token manual o{" "}
+          <code className="text-[#6e8098]">npm run deploy:pages</code>.
+          Sitio:{" "}
           <a
-            href="https://aaguerrao-spec.github.io/"
+            href={getPublicSiteUrl() || "https://riskguard-ai-suite.vercel.app"}
             className="text-[#8fa0b8] underline-offset-2 hover:underline"
             target="_blank"
             rel="noreferrer"
           >
-            https://aaguerrao-spec.github.io/
+            {getPublicSiteUrl() || "https://riskguard-ai-suite.vercel.app"}
           </a>
-          . Ya no necesitas abrir el dashboard como archivo local (<code className="text-[#6e8098]">file:///</code>).
         </p>
       </header>
 

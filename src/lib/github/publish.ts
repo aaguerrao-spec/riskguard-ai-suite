@@ -1,15 +1,16 @@
 import type { MenuData, PendingUpload } from "@/lib/menu/types";
+import { getGitHubBranch } from "@/lib/site-config";
 
-const REPO = "aaguerrao-spec/aaguerrao-spec.github.io";
-const BRANCH = "main";
+const LEGACY_REPO = "aaguerrao-spec/aaguerrao-spec.github.io";
 
 interface GitHubFileResponse {
   sha?: string;
 }
 
-async function getFileSha(path: string, token: string): Promise<string | undefined> {
+async function getFileSha(path: string, token: string, repo = LEGACY_REPO): Promise<string | undefined> {
+  const branch = getGitHubBranch();
   const response = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,
+    `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -31,11 +32,13 @@ async function upsertFile(
   path: string,
   content: string,
   message: string,
-  token: string
+  token: string,
+  repo = LEGACY_REPO
 ) {
-  const sha = await getFileSha(path, token);
+  const branch = getGitHubBranch();
+  const sha = await getFileSha(path, token, repo);
   const response = await fetch(
-    `https://api.github.com/repos/${REPO}/contents/${path}`,
+    `https://api.github.com/repos/${repo}/contents/${path}`,
     {
       method: "PUT",
       headers: {
@@ -46,7 +49,7 @@ async function upsertFile(
       body: JSON.stringify({
         message,
         content: btoa(unescape(encodeURIComponent(content))),
-        branch: BRANCH,
+        branch,
         ...(sha ? { sha } : {}),
       }),
     }
@@ -56,6 +59,26 @@ async function upsertFile(
     const error = await response.text();
     throw new Error(`Error al publicar ${path}: ${error}`);
   }
+}
+
+export async function publishMenuViaApi(menu: MenuData, uploads: PendingUpload[]) {
+  const response = await fetch("/api/publish-menu", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ menu, uploads }),
+  });
+
+  const data = (await response.json()) as { ok?: boolean; error?: string; message?: string };
+
+  if (response.status === 501) {
+    return { mode: "fallback" as const };
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || "Error al publicar via API.");
+  }
+
+  return { mode: "api" as const, message: data.message || "Publicado." };
 }
 
 export async function publishMenuToGitHub(

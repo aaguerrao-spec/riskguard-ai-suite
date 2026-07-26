@@ -281,7 +281,7 @@
 
       <div class="nav-section" style="margin-top:28px; padding-top:16px; border-top:1px solid rgba(148,163,184,.12);">
         <div class="nav-title">Administración</div>
-        <button class="nav-btn" data-href="./admin.html"><span>Panel de administración</span><span class="nav-dot"></span></button>
+        <button class="nav-btn" data-href="/admin"><span>Panel de administración</span><span class="nav-dot"></span></button>
       </div>
     </aside>
 
@@ -644,6 +644,17 @@
       return new URL(clean, window.location.origin + '/').pathname;
     }
 
+    function resolveAppPath(relativePath) {
+      const clean = String(relativePath || '').replace(/^\.\//, '');
+      const routeMap = {
+        'admin.html': '/admin',
+        'riskguard.html': '/riskguard',
+        'general.html': '/general',
+      };
+      if (routeMap[clean]) return routeMap[clean];
+      return siteUrl(clean);
+    }
+
     const subtitles = {
       general: 'Centro de control operativo, riesgo y documentación.',
       diagramador: 'Carga documentos y genera despliegues visuales de procesos.',
@@ -715,16 +726,16 @@
         return { type: 'link', href: item.href };
       }
       if (item.href === '/admin' || item.href === '/admin.html' || item.href === './admin.html') {
-        return { type: 'link', href: siteUrl('admin.html') };
+        return { type: 'link', href: resolveAppPath('admin.html') };
       }
       if (item.href === '/riskguard' || item.href === '/riskguard.html' || item.href === './riskguard.html') {
-        return { type: 'link', href: siteUrl('riskguard.html') };
+        return { type: 'link', href: resolveAppPath('riskguard.html') };
       }
       if (item.href === '/general' || item.href === '/general.html' || item.href === './general.html') {
         return { type: 'view', view: 'general' };
       }
-      if (item.href === '/dashboard.html' || item.href === './dashboard.html') {
-        return null;
+      if (item.href === '/dashboard.html' || item.href === './dashboard.html' || item.href === '/dashboard') {
+        return { type: 'link', href: resolveAppPath('dashboard.html') };
       }
       const view = VIEW_MAP[item.id];
       if (view) return { type: 'view', view };
@@ -791,13 +802,13 @@
 
         if (!items.length) {
           navHost.innerHTML = '<div class="menu-loading">No hay herramientas publicadas.</div>';
-          gridHost.innerHTML = '<div class="menu-loading">Publica herramientas desde /admin.html</div>';
+          gridHost.innerHTML = '<div class="menu-loading">Publica herramientas desde /admin</div>';
         }
 
         bindNavButtons();
       } catch (error) {
         navHost.innerHTML = '<div class="menu-loading">No se pudo cargar el menú dinámico.</div>';
-        gridHost.innerHTML = '<div class="menu-loading">Usa /admin.html para publicar el menú.</div>';
+        gridHost.innerHTML = '<div class="menu-loading">Usa /admin para publicar el menu.</div>';
         console.error(error);
       }
     }

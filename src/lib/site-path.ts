@@ -1,5 +1,5 @@
 /**
- * Resuelve rutas relativas al origen del sitio en GitHub Pages (usuario.github.io).
+ * Resuelve rutas relativas al origen del sitio (Vercel o GitHub Pages).
  */
 export function sitePath(relativePath: string): string {
   const clean = relativePath.replace(/^\//, "");

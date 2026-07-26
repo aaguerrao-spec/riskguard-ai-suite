@@ -25,7 +25,8 @@ export function ToolCard({ tool }: ToolCardProps) {
     tool.href.startsWith("http") ||
     tool.href.endsWith(".html") ||
     tool.href.startsWith("./") ||
-    isToolFile;
+    isToolFile ||
+    tool.href.startsWith("/dashboard");
 
   const cardContent = (
     <>
