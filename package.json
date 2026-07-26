@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy": "node scripts/deploy-pages.mjs",
+    "import-menu": "node scripts/import-menu.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiskGuard AI Suite</title>
+  <script>
+    (function () {
+      var path = window.location.pathname || "/";
+      var search = window.location.search || "";
+      var hash = window.location.hash || "";
+
+      if (path !== "/" && !path.endsWith(".html") && !path.startsWith("/_next/")) {
+        window.location.replace(path + ".html" + search + hash);
+        return;
+      }
+
+      window.location.replace("./general.html" + search + hash);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirigiendo... <a href="./general.html">Ir al dashboard</a></p>
+</body>
+</html>
