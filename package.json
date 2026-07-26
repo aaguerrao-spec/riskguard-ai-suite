@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:vercel": "next build",
     "start": "next start",
     "lint": "eslint",
     "deploy:pages": "node scripts/deploy-pages.mjs",
@@ -31,5 +32,8 @@
     "eslint-config-next": "15.5.22",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

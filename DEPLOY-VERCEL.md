@@ -1,118 +1,153 @@
 # Despliegue en Vercel — RiskGuard AI Suite
 
-Este proyecto es **Next.js 15** con assets estaticos en `public/` (incluye `dashboard.html` legacy y motores JS). Vercel es el entorno recomendado; GitHub Pages queda como fallback via `npm run deploy:pages`.
-
-## Que funciona mejor en Vercel
-
-| Funcionalidad | GitHub Pages | Vercel |
-|---------------|--------------|--------|
-| Rutas limpias (`/general`, `/admin`) | Requiere `.html` y parches | Nativo |
-| API serverless (`/api/publish-menu`) | No | Si |
-| Publicar menu sin PAT en el navegador | No (token en cliente) | Si (`GITHUB_TOKEN`) |
-| Redeploy automatico al publicar menu | Manual | Si (webhook GitHub) |
-| CDN global y headers | Limitado | Si |
-| Dashboard legacy (`/dashboard.html`) | Si | Si (desde `public/`) |
-| Motores JS (proceso, procedimiento, VSM) | Si | Si |
-| PDF.js en cliente | Si | Si |
-
-## URL final esperada
-
-Tras conectar el repo:
-
-**https://riskguard-ai-suite.vercel.app**
-
-(o el dominio que asigne Vercel a tu proyecto, p. ej. `riskguard-ai-suite-<team>.vercel.app`)
-
-Rutas principales:
-
-- `/` → redirige a `/general`
-- `/general` — dashboard Next.js
-- `/admin` — panel de administracion
-- `/riskguard` — modulo RiskGuard
-- `/dashboard.html` — dashboard legacy completo (diagramador, VSM, procedimientos)
+Repositorio: **aaguerrao-spec/riskguard-ai-suite**  
+Framework: **Next.js 15** (App Router)  
+Node.js: **20.x** (definido en `package.json` → `engines.node`)
 
 ---
 
-## Paso a paso: desplegar en Vercel
+## Resumen de auditoria
 
-### 1. Subir el codigo a GitHub
+| Item | Estado |
+|------|--------|
+| Estructura Next.js (`src/app/`, `public/`) | OK |
+| Scripts `dev`, `build`, `start` en package.json | OK |
+| `next.config.ts` | OK — redirects + export estatico solo con `STATIC_EXPORT` |
+| `vercel.json` | OK — solo headers de cache (Vercel detecta Next.js solo) |
+| API serverless `/api/publish-menu` | OK |
+| Build local `npm run build` | OK |
+| Variables de entorno documentadas | OK — `.env.example` + `src/lib/site-config.ts` |
+| `.gitignore` (.env, .next, node_modules) | OK |
 
-Asegurate de que el repo **`aaguerrao-spec/riskguard-ai-suite`** tenga la rama `main` actualizada.
+### Posibles riesgos de build (documentados)
 
-### 2. Crear proyecto en Vercel
+1. **`STATIC_EXPORT=true` en Vercel** — rompe API routes. No configurar en Vercel.
+2. **`--turbopack` en build** — si falla en Vercel, cambiar Build Command a `npm run build:vercel`.
+3. **`GITHUB_TOKEN` ausente** — el sitio despliega, pero `/admin` → publicar devuelve 501.
+4. **`.gh-pages/` local** — ignorado en git; no afecta Vercel.
 
-1. Entra en [vercel.com](https://vercel.com) e inicia sesion.
-2. **Add New → Project**.
-3. Importa el repo `riskguard-ai-suite`.
-4. Vercel detecta **Next.js** automaticamente.
+---
 
-### 3. Configuracion de build (por defecto)
+## URL esperada despues del deploy
+
+**Produccion:** `https://riskguard-ai-suite.vercel.app`  
+(o la URL que asigne Vercel al importar el proyecto)
+
+| Ruta | Descripcion |
+|------|-------------|
+| `/` | Redirige a `/general` |
+| `/general` | Dashboard Next.js |
+| `/admin` | Panel de administracion del menu |
+| `/riskguard` | Modulo RiskGuard |
+| `/dashboard.html` | Dashboard legacy (diagramador, VSM, procedimientos) |
+| `/api/publish-menu` | API POST — publicar menu (serverless) |
+
+---
+
+## Paso a paso: conectar repo a Vercel
+
+### 1. Importar proyecto
+
+1. Ir a [vercel.com/new](https://vercel.com/new)
+2. Conectar cuenta GitHub si no esta vinculada
+3. Importar **`aaguerrao-spec/riskguard-ai-suite`**
+4. Vercel detecta **Next.js** automaticamente
+
+### 2. Configuracion de build
 
 | Campo | Valor |
 |-------|--------|
 | Framework Preset | Next.js |
+| Root Directory | `./` (raiz) |
 | Build Command | `npm run build` |
-| Output Directory | *(dejar vacio — Vercel gestiona `.next`)* |
+| Output Directory | *(vacío — Vercel usa `.next` internamente)* |
 | Install Command | `npm install` |
+| Node.js Version | 20.x (Settings → General, si hace falta) |
 
-No uses `STATIC_EXPORT=true` en Vercel.
+### 3. Variables de entorno (obligatorias)
 
-### 4. Variables de entorno
+En **Project → Settings → Environment Variables**, agregar para **Production** (y Preview si quieres):
 
-En **Project → Settings → Environment Variables**:
+| Variable | Descripcion | Ejemplo |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_SITE_URL` | URL publica del sitio (sin `/` final). Usada en `/admin`. | `https://riskguard-ai-suite.vercel.app` |
+| `GITHUB_TOKEN` | Token GitHub con scope `repo`. Solo servidor. | `ghp_xxxx...` |
+| `GITHUB_REPO` | Repo donde se commitea el menu | `aaguerrao-spec/riskguard-ai-suite` |
+| `GITHUB_BRANCH` | Rama destino | `main` |
 
-| Variable | Valor | Entorno |
-|----------|--------|---------|
-| `NEXT_PUBLIC_SITE_URL` | `https://riskguard-ai-suite.vercel.app` | Production |
-| `GITHUB_TOKEN` | Token fine-grained o classic con scope `repo` | Production |
-| `GITHUB_REPO` | `aaguerrao-spec/riskguard-ai-suite` | Production |
-| `GITHUB_BRANCH` | `main` | Production |
+Referencia en codigo: `src/lib/site-config.ts`, `src/app/api/publish-menu/route.ts`, `src/lib/github/publish-server.ts`
 
-`GITHUB_TOKEN` permite que `/admin` publique el menu via `/api/publish-menu` sin exponer el token al navegador.
+### 4. Deploy
 
-### 5. Deploy
+Pulsar **Deploy**. El primer build tarda ~2 minutos.
 
-Pulsa **Deploy**. En 1–2 minutos tendras la URL `*.vercel.app`.
+### 5. Verificacion post-deploy
 
-### 6. Verificar
-
-- [ ] `https://<tu-proyecto>.vercel.app/general`
-- [ ] `https://<tu-proyecto>.vercel.app/dashboard.html`
-- [ ] Subir TXT/PDF en Diagramador → generar diagrama
-- [ ] Generar procedimiento y VSM en el dashboard legacy
-- [ ] `/admin` → publicar menu (con `GITHUB_TOKEN` configurado)
-
-### 7. Dominio personalizado (opcional)
-
-**Settings → Domains** → anade tu dominio y sigue las instrucciones DNS.
-
-Actualiza `NEXT_PUBLIC_SITE_URL` al dominio final.
+- [ ] `https://<proyecto>.vercel.app/general` carga el dashboard
+- [ ] `https://<proyecto>.vercel.app/dashboard.html` carga el dashboard legacy
+- [ ] Diagramador: subir `.txt` → Generar diagrama
+- [ ] VSM: Generar VSM con tabla precargada
+- [ ] Procedimientos: Generar procedimiento
+- [ ] `/admin` → Publicar menu (con `GITHUB_TOKEN` configurado)
 
 ---
 
-## GitHub Pages (legacy)
+## Comandos de build esperados
 
-Si aun necesitas GitHub Pages:
+```bash
+# Desarrollo local
+npm install
+npm run dev
+
+# Build identico a Vercel (produccion)
+npm run build
+npm run start
+
+# Si turbopack falla en Vercel
+npm run build:vercel
+```
+
+---
+
+## Que hacer si el build falla
+
+| Error | Solucion |
+|-------|----------|
+| `output: export` / API routes conflict | Eliminar `STATIC_EXPORT` de variables Vercel |
+| Turbopack / build error | Cambiar Build Command a `npm run build:vercel` |
+| TypeScript / ESLint error | Reproducir localmente con `npm run build` y corregir |
+| Node version mismatch | Settings → General → Node.js 20.x |
+| Module not found | Ejecutar `npm install` y verificar `package-lock.json` en repo |
+| 501 en `/api/publish-menu` | Agregar `GITHUB_TOKEN` en Vercel y redeploy |
+
+---
+
+## Desarrollo local con variables
+
+```bash
+cp .env.example .env.local
+# Editar .env.local con tus valores
+npm run dev
+```
+
+---
+
+## GitHub Pages (legacy, opcional)
 
 ```bash
 npm run deploy:pages
 ```
 
-Eso ejecuta build estatico (`STATIC_EXPORT=true`), excluye temporalmente las API routes y publica en `aaguerrao-spec.github.io`.
+Publica en `https://aaguerrao-spec.github.io/` usando export estatico. No usar en Vercel.
 
 ---
 
-## Solucion de problemas
+## Archivos de configuracion relevantes
 
-**Build falla en Vercel**
-- No definas `STATIC_EXPORT` en Vercel.
-- Revisa que Node.js sea 20.x (Settings → General).
-
-**`/api/publish-menu` devuelve 501**
-- Falta `GITHUB_TOKEN` en variables de entorno.
-
-**Enlaces `.html` antiguos**
-- Redirecciones automaticas: `/general.html` → `/general`, etc. (ver `next.config.ts`).
-
-**Menu no se actualiza tras publicar**
-- Vercel redeploya si el commit es en el repo conectado; espera ~1 min o redeploy manual.
+| Archivo | Proposito |
+|---------|-----------|
+| `next.config.ts` | Redirects, export estatico condicional |
+| `vercel.json` | Headers cache para `/data/` y `/js/` |
+| `.env.example` | Plantilla de variables |
+| `package.json` | Scripts y `engines.node` |
+| `DEPLOY-VERCEL.md` | Esta guia |

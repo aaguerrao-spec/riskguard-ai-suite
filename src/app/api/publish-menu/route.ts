@@ -1,6 +1,8 @@
+import { getGitHubToken } from "@/lib/site-config";
 import { publishMenuOnServer } from "@/lib/github/publish-server";
 import type { MenuData, PendingUpload } from "@/lib/menu/types";
 
+/** Serverless: requiere GITHUB_TOKEN, GITHUB_REPO y GITHUB_BRANCH en Vercel. */
 export const runtime = "nodejs";
 
 interface PublishBody {
@@ -9,11 +11,12 @@ interface PublishBody {
 }
 
 export async function POST(request: Request) {
-  const token = process.env.GITHUB_TOKEN;
+  const token = getGitHubToken();
   if (!token) {
     return Response.json(
       {
-        error: "GITHUB_TOKEN no configurado en Vercel. Usa publicacion manual con token o exporta el bundle.",
+        error:
+          "GITHUB_TOKEN no configurado en Vercel. Anade la variable en Project → Settings → Environment Variables.",
       },
       { status: 501 }
     );
@@ -34,7 +37,8 @@ export async function POST(request: Request) {
     await publishMenuOnServer(body.menu, body.uploads ?? [], token);
     return Response.json({
       ok: true,
-      message: "Menu publicado. Vercel redeployara automaticamente si el repo esta conectado.",
+      message:
+        "Menu publicado en GitHub. Vercel redeployara automaticamente si el repo esta conectado.",
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Error al publicar.";
