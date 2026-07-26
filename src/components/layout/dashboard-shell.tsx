@@ -11,11 +11,11 @@ export function DashboardShell({
   breadcrumb = ["Dashboard", "General"],
 }: DashboardShellProps) {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#04070f]">
+    <div className="flex h-screen w-full overflow-hidden bg-[#02050b]">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar segments={breadcrumb} />
-        <main className="flex-1 overflow-y-auto bg-[#04070f]">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-[#02050b]">{children}</main>
       </div>
     </div>
   );

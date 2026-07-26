@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #04070f;
-  --foreground: #e6ebf4;
-  --sidebar: #070c16;
-  --card: #0a1220;
-  --muted: #5b6c84;
+  --background: #02050b;
+  --foreground: #e2e8f0;
+  --sidebar: #050a12;
+  --card: #080f1a;
+  --muted: #4f6078;
   --accent-violet: #c4b5fd;
-  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(255, 255, 255, 0.035);
 }
 
 @theme inline {
@@ -28,4 +28,9 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
 }

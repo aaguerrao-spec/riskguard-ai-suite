@@ -21,7 +21,7 @@ const mainNav = [
   { label: "Generador de Procedimientos", href: "#", icon: FileText },
   { label: "BPM Gap Analyzer", href: "#", icon: ScanSearch },
   { label: "Project AI", href: "#", icon: FolderKanban },
-  { label: "RiskGuard AI", href: "#", icon: ShieldAlert },
+  { label: "RiskGuard AI", href: "/riskguard", icon: ShieldAlert },
 ] as const;
 
 const adminNav = {
@@ -34,25 +34,25 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-full w-[224px] shrink-0 flex-col border-r border-white/[0.035] bg-[#070c16] md:flex">
-      <div className="px-[18px] pb-1 pt-[22px]">
-        <Link href="/general" className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-violet-500/12">
-            <ShieldAlert className="h-3 w-3 text-violet-300/90" strokeWidth={1.7} />
+    <aside className="hidden h-full w-[228px] shrink-0 flex-col border-r border-white/[0.028] bg-[#050a12] md:flex">
+      <div className="px-5 pb-0 pt-6">
+        <Link href="/general" className="flex items-center gap-[9px]">
+          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[5px] bg-violet-500/[0.11]">
+            <ShieldAlert className="h-[11px] w-[11px] text-violet-300/85" strokeWidth={1.65} />
           </div>
-          <div className="leading-[1.15]">
-            <p className="text-[12px] font-semibold tracking-[-0.01em] text-[#e4eaf4]">
+          <div className="leading-[1.1]">
+            <p className="text-[11.5px] font-semibold tracking-[-0.01em] text-[#dce3ef]">
               RiskGuard
             </p>
-            <p className="text-[9.5px] font-medium tracking-[0.05em] text-[#4f5f76]">
+            <p className="text-[9px] font-medium tracking-[0.06em] text-[#445368]">
               AI Suite
             </p>
           </div>
         </Link>
       </div>
 
-      <nav className="mt-6 flex flex-1 flex-col px-2.5">
-        <ul className="space-y-[3px]">
+      <nav className="mt-7 flex flex-1 flex-col px-2.5">
+        <ul className="space-y-[2px]">
           {mainNav.map((item) => {
             const Icon = item.icon;
             const active = item.href !== "#" && pathname.startsWith(item.href);
@@ -62,18 +62,18 @@ export function AppSidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2.5 rounded-[7px] px-2.5 py-[7px] text-[12px] leading-none transition-colors",
+                    "flex items-center gap-2.5 rounded-[8px] px-[10px] py-[8px] text-[12px] leading-none transition-colors duration-150",
                     active
-                      ? "bg-violet-500/[0.13] font-medium text-[#c4b5fd]"
-                      : "font-normal text-[#657890] hover:bg-white/[0.02] hover:text-[#8496ae]"
+                      ? "bg-violet-500/[0.14] font-medium text-[#c4b5fd]"
+                      : "font-normal text-[#5c6d84] hover:bg-white/[0.015] hover:text-[#7a8ba3]"
                   )}
                 >
                   <Icon
                     className={cn(
-                      "h-[14px] w-[14px] shrink-0",
-                      active ? "text-[#c4b5fd]" : "text-[#536478]"
+                      "h-[13px] w-[13px] shrink-0",
+                      active ? "text-[#c4b5fd]" : "text-[#4a5b70]"
                     )}
-                    strokeWidth={1.55}
+                    strokeWidth={1.5}
                   />
                   <span className="truncate">{item.label}</span>
                 </Link>
@@ -82,15 +82,15 @@ export function AppSidebar() {
           })}
         </ul>
 
-        <div className="mt-auto pb-4 pt-8">
-          <div className="mb-3.5 h-px bg-white/[0.045]" />
+        <div className="mt-auto pb-3.5 pt-6">
+          <div className="mb-3 h-px bg-white/[0.035]" />
           <Link
             href={adminNav.href}
-            className="flex items-center gap-2.5 rounded-[7px] px-2.5 py-[7px] text-[12px] font-normal leading-none text-[#c96d7f] transition-colors hover:bg-rose-500/[0.05] hover:text-[#d88494]"
+            className="flex items-center gap-2.5 rounded-[8px] px-[10px] py-[8px] text-[12px] font-normal leading-none text-[#b85f72] transition-colors duration-150 hover:bg-rose-500/[0.04] hover:text-[#c97586]"
           >
             <adminNav.icon
-              className="h-[14px] w-[14px] shrink-0 text-[#b85a6e]"
-              strokeWidth={1.55}
+              className="h-[13px] w-[13px] shrink-0 text-[#a34f61]"
+              strokeWidth={1.5}
             />
             <span>{adminNav.label}</span>
           </Link>
