@@ -4,12 +4,7 @@
   const TYPE_NO_VALOR = /no\s+valor\s+agregado/i;
   const TYPE_VALOR = /valor\s+agregado/i;
 
-  const DEFAULT_STAGES = [
-    { etapa: "Recepcion", ciclo: "15 min", espera: "10 min", responsable: "Operaciones", valor: "valor" },
-    { etapa: "Validacion", ciclo: "30 min", espera: "4 h", responsable: "Control interno", valor: "no-valor" },
-    { etapa: "Aprobacion", ciclo: "20 min", espera: "2 h", responsable: "Gerencia", valor: "valor" },
-    { etapa: "Registro", ciclo: "12 min", espera: "35 min", responsable: "Administracion", valor: "valor" },
-  ];
+  const DEFAULT_STAGES = [];
 
   function normalize(text) {
     return String(text || "").replace(/\s+/g, " ").trim();

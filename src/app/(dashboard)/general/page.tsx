@@ -8,10 +8,7 @@ export default function GeneralPage() {
           Menú de Herramientas
         </h1>
         <p className="mt-[6px] text-[11.5px] leading-normal text-[#4f6078]">
-          Bienvenido de nuevo,{" "}
-          <span className="font-semibold text-[#8fa0b8]">
-            ana.alejandra@email.com
-          </span>
+          Selecciona una herramienta del menú para comenzar.
         </p>
       </header>
 

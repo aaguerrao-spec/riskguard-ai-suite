@@ -267,28 +267,15 @@
   }
 
   function detectStepsFromFilename(filename) {
-    const name = (filename || "").toLowerCase();
-    if (name.includes("compra") || name.includes("proveedor") || name.includes("flujo") || name.includes("vsm")) {
-      return [
-        { name: "Recepcion", duration: "15 min", waitTime: "10 min", responsible: "Operaciones", type: "valor", typeLabel: "Valor agregado" },
-        { name: "Validacion", duration: "30 min", waitTime: "4 h", responsible: "Control interno", type: "no-valor", typeLabel: "No valor agregado" },
-        { name: "Aprobacion", duration: "20 min", waitTime: "2 h", responsible: "Gerencia", type: "valor", typeLabel: "Valor agregado" },
-        { name: "Registro", duration: "12 min", waitTime: "35 min", responsible: "Administracion", type: "valor", typeLabel: "Valor agregado" },
-      ];
-    }
-    if (name.includes("incidente")) {
-      return [
-        { name: "Registro", duration: "10 min", waitTime: "5 min", responsible: "Operaciones", type: "valor", typeLabel: "Valor agregado" },
-        { name: "Clasificacion", duration: "20 min", waitTime: "1 h", responsible: "Control interno", type: "no-valor", typeLabel: "No valor agregado" },
-        { name: "Tratamiento", duration: "45 min", waitTime: "2 h", responsible: "Operaciones", type: "valor", typeLabel: "Valor agregado" },
-        { name: "Cierre", duration: "15 min", waitTime: "30 min", responsible: "Control interno", type: "control", typeLabel: "Control interno" },
-      ];
-    }
     return [
-      { name: "Ingreso del documento", duration: "5 min", waitTime: null, responsible: null, type: "valor", typeLabel: "Valor agregado" },
-      { name: "Interpretacion del flujo", duration: "15 min", waitTime: "10 min", responsible: "Operaciones", type: "valor", typeLabel: "Valor agregado" },
-      { name: "Validacion del proceso", duration: "30 min", waitTime: "4 h", responsible: "Control interno", type: "no-valor", typeLabel: "No valor agregado" },
-      { name: "Cierre del despliegue", duration: "10 min", waitTime: null, responsible: "Administracion", type: "valor", typeLabel: "Valor agregado" },
+      {
+        name: "Sin pasos detectados",
+        duration: null,
+        waitTime: null,
+        responsible: null,
+        type: "unknown",
+        typeLabel: "Agrega pasos numerados en el documento",
+      },
     ];
   }
 
