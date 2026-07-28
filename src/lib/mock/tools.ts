@@ -74,11 +74,11 @@ export const tools: Tool[] = [
     accent: "pink",
   },
   {
-    id: "riskguard-ai",
+    id: "riskguard",
     title: "RiskGuard AI",
     description:
       "Identificador y calificador de riesgos para asegurar entregas y mitigar eventos.",
-    href: "#",
+    href: "/riskguard",
     icon: ShieldAlert,
     accent: "cyan",
   },
@@ -98,31 +98,31 @@ export const accentStyles: Record<
   { iconBg: string; iconColor: string }
 > = {
   yellow: {
-    iconBg: "bg-[#221c0c]",
-    iconColor: "text-[#e8c547]",
+    iconBg: "bg-[#1a160a]",
+    iconColor: "text-[#d4b63a]",
   },
   violet: {
-    iconBg: "bg-[#18122a]",
-    iconColor: "text-[#b794f6]",
+    iconBg: "bg-[#14101f]",
+    iconColor: "text-[#a78bfa]",
   },
   blue: {
-    iconBg: "bg-[#12162a]",
-    iconColor: "text-[#8b9cf7]",
+    iconBg: "bg-[#101325]",
+    iconColor: "text-[#818cf8]",
   },
   teal: {
-    iconBg: "bg-[#0c1e1c]",
-    iconColor: "text-[#3dceb4]",
+    iconBg: "bg-[#0a1716]",
+    iconColor: "text-[#2dd4bf]",
   },
   pink: {
-    iconBg: "bg-[#22101c]",
-    iconColor: "text-[#f072b6]",
+    iconBg: "bg-[#1a0e16]",
+    iconColor: "text-[#ec4899]",
   },
   cyan: {
-    iconBg: "bg-[#0b1c20]",
-    iconColor: "text-[#3ec9d6]",
+    iconBg: "bg-[#0a161a]",
+    iconColor: "text-[#22d3ee]",
   },
   linkedin: {
-    iconBg: "bg-[#0c1728]",
-    iconColor: "text-[#4d9feb]",
+    iconBg: "bg-[#0a1420]",
+    iconColor: "text-[#3b9eff]",
   },
 };

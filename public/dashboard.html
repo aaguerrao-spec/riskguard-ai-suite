@@ -1,0 +1,1401 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiskGuard AI Suite</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-2: #11172a;
+      --surface: #151d34;
+      --surface-2: #1b2440;
+      --surface-3: #0f1529;
+      --sidebar: #0a1120;
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e6edf7;
+      --muted: #95a3bf;
+      --faint: #6b7a96;
+      --primary: #2dd4bf;
+      --primary-2: #22c7d6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #f43f5e;
+      --radius: 18px;
+      --radius-sm: 12px;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #09101d, #0c1220 35%, #0b1020); color: var(--text); font-family: var(--font); }
+    body { min-height: 100vh; }
+    .app { display: grid; grid-template-columns: 290px 1fr; min-height: 100vh; }
+    .sidebar {
+      background: linear-gradient(180deg, rgba(10,17,32,.98), rgba(7,13,26,.98));
+      border-right: 1px solid var(--border);
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(45,212,191,.12), rgba(34,199,214,.05));
+      border: 1px solid rgba(45,212,191,.18); cursor: pointer; margin-bottom: 22px;
+    }
+    .logo-mark {
+      width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #04212a; font-weight: 800;
+    }
+    .logo-text { line-height: 1.2; }
+    .logo-text strong { display: block; font-size: 14px; }
+    .logo-text span { color: var(--muted); font-size: 12px; }
+    .nav-section { margin: 18px 0; }
+    .nav-title { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); padding: 8px 10px; }
+    .nav-btn {
+      width: 100%; border: 0; background: transparent; color: var(--text); padding: 12px 14px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; cursor: pointer;
+      transition: .2s ease; text-align: left;
+    }
+    .nav-btn:hover { background: rgba(148,163,184,.08); }
+    .nav-btn.active {
+      background: linear-gradient(135deg, rgba(45,212,191,.16), rgba(34,199,214,.08));
+      border: 1px solid rgba(45,212,191,.22);
+      box-shadow: inset 0 0 0 1px rgba(45,212,191,.05);
+    }
+    .nav-dot { width: 8px; height: 8px; border-radius: 999px; background: transparent; }
+    .nav-btn.active .nav-dot { background: var(--primary); box-shadow: 0 0 10px rgba(45,212,191,.6); }
+    .content { padding: 22px; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px;
+      background: rgba(21,29,52,.72); border: 1px solid var(--border); padding: 14px 16px; border-radius: var(--radius);
+      backdrop-filter: blur(8px);
+    }
+    .topbar h1 { margin: 0; font-size: 18px; }
+    .topbar p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .chip, .btn {
+      border-radius: 999px; border: 1px solid var(--border); padding: 10px 14px; background: var(--surface-3); color: var(--text);
+      font-size: 13px;
+    }
+    .btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #07252a; border: 0; font-weight: 700; cursor: pointer; }
+    .btn.ghost { background: transparent; cursor: pointer; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .page-header { margin: 6px 0 18px; }
+    .page-header h2 { margin: 0 0 6px; font-size: 28px; }
+    .page-header p { margin: 0; color: var(--muted); max-width: 80ch; }
+    .grid { display: grid; gap: 16px; }
+    .grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card {
+      background: linear-gradient(180deg, rgba(21,29,52,.96), rgba(15,21,41,.96));
+      border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+    }
+    .card h3, .card h4 { margin-top: 0; }
+    .kpi { position: relative; overflow: hidden; }
+    .kpi::after {
+      content: ""; position: absolute; inset: auto -40px -40px auto; width: 120px; height: 120px; border-radius: 999px;
+      background: radial-gradient(circle, rgba(45,212,191,.16), transparent 65%);
+    }
+    .kpi .label { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+    .kpi .value { font-size: 30px; font-weight: 800; margin-bottom: 8px; }
+    .kpi .meta { color: var(--faint); font-size: 12px; }
+    .list { display: grid; gap: 10px; }
+    .list-item {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 12px 14px; border-radius: 14px; background: rgba(148,163,184,.05); border: 1px solid rgba(148,163,184,.08);
+    }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); }
+    .badge.success { color: #c7f9d8; background: rgba(34,197,94,.12); }
+    .badge.warning { color: #ffe9b6; background: rgba(245,158,11,.12); }
+    .badge.danger { color: #ffd0da; background: rgba(244,63,94,.12); }
+    .badge.info { color: #c7f9f3; background: rgba(45,212,191,.12); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid rgba(148,163,184,.1); text-align: left; font-size: 13px; }
+    th { color: var(--muted); font-weight: 600; }
+    input, select, textarea {
+      width: 100%; background: var(--surface-3); color: var(--text); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: rgba(45,212,191,.55); box-shadow: 0 0 0 3px rgba(45,212,191,.12); }
+    label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .full { grid-column: 1 / -1; }
+    .progress { height: 10px; border-radius: 999px; background: rgba(148,163,184,.12); overflow: hidden; }
+    .progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); border-radius: inherit; }
+    .diagram-layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+    .upload-zone {
+      border: 1.5px dashed rgba(45,212,191,.35); border-radius: 16px; padding: 22px; text-align: center;
+      background: linear-gradient(180deg, rgba(45,212,191,.06), rgba(34,199,214,.03)); cursor: pointer;
+    }
+    .upload-zone.drag { background: rgba(45,212,191,.12); border-color: rgba(45,212,191,.75); }
+    .file-list { display: grid; gap: 10px; margin-top: 14px; }
+    .file-item {
+      padding: 12px; border-radius: 14px; background: rgba(148,163,184,.05); border: 1px solid rgba(148,163,184,.12); cursor: pointer;
+    }
+    .file-item.active { border-color: rgba(45,212,191,.5); background: rgba(45,212,191,.09); }
+    .muted { color: var(--muted); }
+    .empty-state {
+      min-height: 240px; display: grid; place-items: center; text-align: center; color: var(--muted);
+      border-radius: 18px; border: 1px dashed rgba(148,163,184,.18); background: rgba(15,21,41,.55); padding: 20px;
+    }
+    .flow-wrap { overflow-x: auto; }
+    .flow { display: flex; gap: 14px; align-items: center; min-width: max-content; padding: 12px 4px; }
+    .flow-step {
+      min-width: 200px; padding: 16px; border-radius: 16px; background: linear-gradient(180deg, rgba(27,36,64,.98), rgba(17,23,42,.98));
+      border: 1px solid rgba(45,212,191,.18); position: relative;
+    }
+    .flow-step.type-valor { border-color: rgba(45,212,191,.42); box-shadow: inset 0 0 0 1px rgba(45,212,191,.08); }
+    .flow-step.type-no-valor { border-color: rgba(251,191,36,.42); box-shadow: inset 0 0 0 1px rgba(251,191,36,.08); }
+    .flow-step.type-control { border-color: rgba(148,163,184,.35); }
+    .flow-step .small { color: var(--faint); font-size: 12px; margin-bottom: 8px; }
+    .flow-step-meta { display: grid; gap: 4px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+    .flow-step-meta span { display: block; }
+    .flow-step-badge { display: inline-block; margin-top: 10px; font-size: 10px; padding: 3px 8px; border-radius: 999px; }
+    .flow-step.flow-start, .flow-step.flow-end {
+      min-width: 120px; text-align: center; border-color: rgba(45,212,191,.55);
+      background: linear-gradient(180deg, rgba(45,212,191,.12), rgba(17,23,42,.98));
+    }
+    .proc-document { display: grid; gap: 14px; }
+    .proc-section { padding: 12px 14px; border-radius: 14px; background: rgba(148,163,184,.04); border: 1px solid var(--border); }
+    .proc-section h4 { margin: 0 0 8px; font-size: 13px; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; }
+    .proc-section p, .proc-section ul { margin: 0; color: var(--text); font-size: 14px; line-height: 1.55; }
+    .proc-section ul { padding-left: 18px; }
+    .proc-steps { display: grid; gap: 8px; }
+    .proc-step-item { padding: 10px 12px; border-radius: 12px; background: rgba(15,21,41,.55); border: 1px solid rgba(148,163,184,.12); }
+    .proc-step-item strong { display: block; margin-bottom: 4px; }
+    .proc-step-meta { font-size: 12px; color: var(--muted); }
+    .proc-status { font-size: 13px; margin-bottom: 12px; }
+    .proc-status.error { color: #f87171; }
+    .proc-status.ok { color: var(--primary); }
+    .proc-diagram-title { margin: 18px 0 10px; font-size: 14px; color: var(--muted); }
+    .vsm-table input, .vsm-table select { width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(15,21,41,.75); color: var(--text); font-size: 13px; }
+    .vsm-table td { vertical-align: middle; }
+    .vsm-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .vsm-metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 16px 0; }
+    .vsm-metric { padding: 14px; border-radius: 14px; background: rgba(148,163,184,.04); border: 1px solid var(--border); }
+    .vsm-metric .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .vsm-metric .value { font-size: 22px; font-weight: 700; }
+    .vsm-metric.va .value { color: var(--primary); }
+    .vsm-metric.nva .value { color: #fbbf24; }
+    .vsm-bottleneck { padding: 12px 14px; border-radius: 14px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); margin-bottom: 16px; font-size: 14px; }
+    .vsm-timeline-wrap { overflow-x: auto; padding: 8px 4px 12px; }
+    .vsm-timeline { display: flex; align-items: stretch; min-width: max-content; gap: 0; }
+    .vsm-unit { display: flex; align-items: center; }
+    .vsm-process {
+      min-width: 170px; padding: 14px; border-radius: 14px;
+      background: linear-gradient(180deg, rgba(27,36,64,.98), rgba(17,23,42,.98));
+      border: 2px solid rgba(45,212,191,.35);
+    }
+    .vsm-process.nva { border-color: rgba(251,191,36,.45); }
+    .vsm-process .name { font-weight: 700; margin-bottom: 8px; }
+    .vsm-process .time { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .vsm-process .badge-inline { display: inline-block; margin-top: 8px; font-size: 10px; padding: 2px 8px; border-radius: 999px; }
+    .vsm-wait {
+      min-width: 90px; padding: 10px 8px; text-align: center; color: var(--muted); font-size: 11px;
+      border-bottom: 2px dashed rgba(148,163,184,.35); margin: 0 6px; align-self: center;
+    }
+    .vsm-wait strong { display: block; color: #fbbf24; font-size: 12px; margin-bottom: 4px; }
+    .vsm-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .vsm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .vsm-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .vsm-legend i.va { background: rgba(45,212,191,.75); }
+    .vsm-legend i.nva { background: rgba(251,191,36,.75); }
+    .vsm-status { font-size: 13px; margin-bottom: 12px; }
+    .vsm-status.error { color: #f87171; }
+    .vsm-status.ok { color: var(--primary); }
+    @media (max-width: 980px) { .vsm-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    .flow-arrow { width: 36px; height: 2px; background: linear-gradient(90deg, rgba(45,212,191,.25), rgba(45,212,191,.8)); position: relative; }
+    .flow-arrow::after { content: ""; position: absolute; right: -2px; top: -4px; border-left: 8px solid var(--primary); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+    .process-loading { color: var(--primary); font-size: 13px; padding: 12px 0; }
+    .extraction-note { font-size: 12px; color: var(--faint); margin-top: 8px; }
+    .mobile-toggle { display: none; }
+    .design-system {
+      margin-bottom: 18px; background: linear-gradient(180deg, rgba(14,20,37,.95), rgba(11,16,32,.95));
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+    }
+    .design-system h2 { margin-top: 0; }
+    .token-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+    .token { border: 1px solid var(--border); border-radius: 14px; padding: 12px; background: rgba(148,163,184,.04); }
+    .token-swatch { height: 42px; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,.06); }
+    .tool-card {
+      cursor: pointer; transition: .2s ease; min-height: 150px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .tool-card:hover { border-color: rgba(45,212,191,.35); transform: translateY(-1px); }
+    .tool-card .tool-icon {
+      width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .tool-card .tool-link {
+      margin-top: auto; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+    }
+    .external-frame {
+      width: 100%; min-height: 72vh; border: 1px solid var(--border); border-radius: var(--radius);
+      background: #fff;
+    }
+    .menu-loading { color: var(--muted); font-size: 12px; padding: 8px 10px; }
+    @media (max-width: 1180px) {
+      .grid.cols-4, .grid.cols-3 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .diagram-layout { grid-template-columns: 1fr; }
+      .token-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; left: 0; top: 0; bottom: 0; width: 300px; transform: translateX(-102%); transition: .25s ease; z-index: 30;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-toggle { display: inline-flex; }
+      .content { padding: 14px; }
+      .grid.cols-4, .grid.cols-3, .grid.cols-2, .form-grid, .token-grid { grid-template-columns: 1fr; }
+      .topbar { position: sticky; top: 10px; z-index: 20; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo" data-view-link="general">
+        <div class="logo-mark">RG</div>
+        <div class="logo-text">
+          <strong>RiskGuard AI Suite</strong>
+          <span>Plataforma enterprise de riesgo y procesos</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Navegación</div>
+        <button class="nav-btn active" data-view="general"><span>General</span><span class="nav-dot"></span></button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Herramientas</div>
+        <div id="dynamic-tools-nav">
+          <div class="menu-loading">Cargando menú...</div>
+        </div>
+      </div>
+
+      <div class="nav-section" style="margin-top:28px; padding-top:16px; border-top:1px solid rgba(148,163,184,.12);">
+        <div class="nav-title">Administración</div>
+        <button class="nav-btn" data-href="/admin"><span>Panel de administración</span><span class="nav-dot"></span></button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="design-system">
+        <h2>Design System</h2>
+        <p class="muted">Sistema visual enterprise en español para RiskGuard AI Suite: paleta oscura de alta confianza, acentos cian/teal para acciones y estados activos, tipografía sans moderna, cards elevadas, componentes consistentes y navegación lateral persistente.</p>
+        <div class="token-grid">
+          <div class="token"><div class="token-swatch" style="background:#0b1020"></div><strong>--bg</strong><div class="muted">Fondo principal</div></div>
+          <div class="token"><div class="token-swatch" style="background:#151d34"></div><strong>--surface</strong><div class="muted">Superficies y paneles</div></div>
+          <div class="token"><div class="token-swatch" style="background:#2dd4bf"></div><strong>--primary</strong><div class="muted">CTA y estado activo</div></div>
+          <div class="token"><div class="token-swatch" style="background:#22c7d6"></div><strong>--primary-2</strong><div class="muted">Acento secundario</div></div>
+        </div>
+      </section>
+
+      <div class="topbar">
+        <div>
+          <h1 id="topbar-title">General</h1>
+          <p id="topbar-subtitle">Centro de control operativo, riesgo y documentación.</p>
+        </div>
+        <div class="top-actions">
+          <button class="btn ghost mobile-toggle" id="mobileToggle">Menú</button>
+          <div class="chip">Modo oscuro activo</div>
+          <button class="btn primary">Nuevo análisis</button>
+        </div>
+      </div>
+
+      <section class="view active" id="view-general">
+        <div class="page-header">
+          <h2>General</h2>
+          <p>Vista consolidada del estado de procesos, riesgos, procedimientos y proyectos en seguimiento dentro del ecosistema RiskGuard AI Suite.</p>
+        </div>
+        <div class="grid cols-4">
+          <div class="card kpi"><div class="label">Procesos activos</div><div class="value">—</div><div class="meta muted">Sin datos — usa el Diagramador</div></div>
+          <div class="card kpi"><div class="label">Riesgos abiertos</div><div class="value">—</div><div class="meta muted">Sin datos registrados</div></div>
+          <div class="card kpi"><div class="label">Procedimientos generados</div><div class="value">—</div><div class="meta muted">Genera un SOP en Procedimientos</div></div>
+          <div class="card kpi"><div class="label">Proyectos en seguimiento</div><div class="value">—</div><div class="meta muted">Sin proyectos cargados</div></div>
+        </div>
+        <div class="grid cols-2" style="margin-top:16px;">
+          <div class="card">
+            <h3>Actividad reciente</h3>
+            <div class="list">
+              <div class="muted" style="padding:14px;">Sin actividad reciente. Usa las herramientas del menú para generar diagramas, procedimientos o mapas VSM.</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Resumen operativo</h3>
+            <table>
+              <thead><tr><th>Módulo</th><th>Estado</th><th>Indicador</th></tr></thead>
+              <tbody>
+                <tr><td colspan="3" class="muted" style="padding:14px;text-align:center;">Los indicadores se actualizarán cuando uses cada herramienta.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h3>Ecosistema de herramientas</h3>
+          <div id="dynamic-tools-grid" class="grid cols-3">
+            <div class="menu-loading">Cargando herramientas del menú...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-external-tool">
+        <div class="page-header">
+          <h2 id="external-tool-title">Herramienta</h2>
+          <p id="external-tool-desc">Contenido cargado dinámicamente desde el menú publicado.</p>
+        </div>
+        <div class="card" style="padding:12px;">
+          <iframe id="external-tool-frame" class="external-frame" title="Herramienta embebida"></iframe>
+        </div>
+      </section>
+
+      <section class="view" id="view-riskguard">
+        <div class="page-header">
+          <h2>RiskGuard AI</h2>
+          <p>Workspace de inteligencia operativa para monitoreo de riesgos, incidentes, controles y acciones de mitigación.</p>
+        </div>
+        <div class="grid cols-4">
+          <div class="card"><h4>Monitoreo de riesgos</h4><div class="value">—</div><div class="muted">Sin datos — conecta fuentes de riesgo</div></div>
+          <div class="card"><h4>Detección de incidentes</h4><div class="value">—</div><div class="muted">Sin incidentes registrados</div></div>
+          <div class="card"><h4>Controles de cumplimiento</h4><div class="value">—</div><div class="muted">Sin controles evaluados</div></div>
+          <div class="card"><h4>Acciones de mitigación</h4><div class="value">—</div><div class="muted">Sin planes activos</div></div>
+        </div>
+        <div class="grid cols-2" style="margin-top:16px;">
+          <div class="card"><h3>Radar operativo</h3><p class="muted">Agrega datos de riesgo para visualizar la matriz de exposición por categoría.</p></div>
+          <div class="card"><h3>Priorización</h3><div class="muted" style="padding:12px;">Sin riesgos priorizados. Usa RiskGuard AI en el menú Next.js para gestión avanzada.</div></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-diagramador">
+        <div class="page-header">
+          <h2>Diagramador de Procesos</h2>
+          <p>Sube TXT o PDF para extraer pasos del contenido y generar un diagrama visual del proceso en el navegador.</p>
+        </div>
+        <div class="diagram-layout">
+          <div class="card">
+            <h3>Carga de documentos</h3>
+            <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Zona para cargar documentos">
+              <input type="file" id="fileInput" multiple accept=".pdf,.txt,.csv" style="display:none" />
+              <strong>Arrastra tus documentos aquí</strong>
+              <p class="muted">o haz clic en "Seleccionar documento"</p>
+              <button type="button" class="btn primary" id="selectFileBtn">Seleccionar documento</button>
+              <p class="muted" style="margin-top:12px;">Formatos con extraccion completa: PDF, TXT, CSV</p>
+            </div>
+            <div id="statusMessage" class="muted" style="margin-top:12px;">Sin documentos cargados.</div>
+            <div class="file-list" id="fileList"></div>
+          </div>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div>
+                <h3 style="margin-bottom:6px;">Despliegue del proceso</h3>
+                <div class="muted" id="processSummary">Selecciona un documento para generar el diagrama.</div>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn primary" id="generateBtn">Generar diagrama</button>
+                <button class="btn ghost" id="clearBtn">Limpiar</button>
+              </div>
+            </div>
+            <div id="diagramContainer" style="margin-top:16px;">
+              <div class="empty-state">
+                <div>
+                  <h3>No hay diagrama generado</h3>
+                  <p>Sube un documento y selecciona uno de la lista para generar automáticamente el flujo del proceso.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-flujo-valor">
+        <div class="page-header">
+          <h2>Mapeo de Flujo de Valor</h2>
+          <p>Visualiza etapas, tiempos y valor agregado para identificar desperdicios y cuellos de botella.</p>
+        </div>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3 style="margin-top:0;">Etapas del proceso</h3>
+            <p class="muted" style="margin-bottom:12px;">Edita la tabla y pulsa "Generar VSM" para calcular metricas y visualizar el flujo de valor.</p>
+            <div style="overflow-x:auto;">
+              <table class="vsm-table">
+                <thead>
+                  <tr>
+                    <th>Etapa</th>
+                    <th>Tiempo de ciclo</th>
+                    <th>Tiempo de espera</th>
+                    <th>Responsable</th>
+                    <th>Valor</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="vsmTableBody"></tbody>
+              </table>
+            </div>
+            <div class="vsm-actions">
+              <button type="button" class="btn ghost" id="vsmAddRow">Agregar etapa</button>
+              <button type="button" class="btn ghost" id="vsmClearRows">Limpiar tabla</button>
+              <button type="button" class="btn primary" id="generarVsm">Generar VSM</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0;">Mapa de flujo de valor</h3>
+            <div id="vsmStatus" class="vsm-status muted">Pulsa "Generar VSM" para construir el diagrama y los totales.</div>
+            <div id="vsmOutput" hidden>
+              <div id="vsmMetrics" class="vsm-metrics"></div>
+              <div id="vsmBottleneck" class="vsm-bottleneck"></div>
+              <div class="vsm-legend">
+                <span><i class="va"></i> Valor agregado (ciclo)</span>
+                <span><i class="nva"></i> No valor agregado</span>
+                <span>--- Espera entre etapas</span>
+              </div>
+              <div id="vsmDiagram"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-procedimientos">
+        <div class="page-header">
+          <h2>Generador de Procedimientos</h2>
+          <p>Crea procedimientos tipo SOP en español con estructura clara y lista para copiar.</p>
+        </div>
+        <div class="grid cols-2">
+          <div class="card">
+            <div class="form-grid">
+              <div><label>Nombre del procedimiento</label><input id="procNombre" placeholder="Ej: Gestión de incidentes" /></div>
+              <div><label>Responsable</label><input id="procResponsable" placeholder="Ej: Oficial de cumplimiento" /></div>
+              <div class="full"><label>Objetivo</label><textarea id="procObjetivo" placeholder="Describe el objetivo del procedimiento"></textarea></div>
+              <div class="full"><label>Alcance</label><textarea id="procAlcance" placeholder="Define el alcance y áreas aplicables"></textarea></div>
+              <div><label>Entradas</label><textarea id="procEntradas" placeholder="Ej: reporte inicial, evidencia"></textarea></div>
+              <div><label>Salidas</label><textarea id="procSalidas" placeholder="Ej: incidente cerrado, plan de acción"></textarea></div>
+              <div class="full"><label>Pasos</label><textarea id="procPasos" placeholder="Un paso por línea. Ej:&#10;1. Recibir reporte&#10;2. Validar información&#10;3. Cerrar incidente"></textarea></div>
+            </div>
+            <div style="margin-top:14px;"><button type="button" class="btn primary" id="generarProcedimiento">Generar procedimiento</button></div>
+          </div>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+              <h3>Salida del procedimiento</h3>
+              <button type="button" class="btn ghost" id="copiarProcedimiento">Copiar resultado</button>
+            </div>
+            <div id="procedimientoStatus" class="proc-status muted">Pulsa "Generar procedimiento" para construir el SOP y su diagrama de flujo.</div>
+            <div id="procedimientoDocumento" class="proc-document" hidden></div>
+            <div id="procedimientoDiagrama" hidden></div>
+            <pre id="procedimientoOutput" hidden aria-hidden="true"></pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-bpm-gap">
+        <div class="page-header">
+          <h2>BPM Gap Analyzer</h2>
+          <p>Compara el proceso actual frente al objetivo y prioriza brechas de impacto.</p>
+        </div>
+        <div class="card">
+          <p class="muted" style="margin-bottom:12px;">Compara procesos actuales vs objetivo. Agrega brechas manualmente o importa desde análisis futuro.</p>
+          <table>
+            <thead><tr><th>Proceso actual</th><th>Proceso objetivo</th><th>Brecha</th><th>Impacto</th><th>Prioridad</th><th>Acción sugerida</th></tr></thead>
+            <tbody>
+              <tr><td colspan="6" class="muted" style="padding:16px;text-align:center;">Sin brechas registradas. Esta sección se llenará con tus datos de análisis.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-proyectai">
+        <div class="page-header">
+          <h2>ProyectAI</h2>
+          <p>Centro de control de proyectos, hitos, avances y responsables.</p>
+        </div>
+        <div class="grid cols-3">
+          <div class="card"><h4>Iniciativas</h4><p class="muted">Sin iniciativas cargadas.</p></div>
+          <div class="card"><h4>Hitos</h4><p class="muted">Sin hitos registrados.</p></div>
+          <div class="card"><h4>Avance global</h4><div class="value">—</div><p class="muted">Agrega proyectos para ver avance.</p></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h3>Iniciativas</h3>
+          <table>
+            <thead><tr><th>Iniciativa</th><th>Estado</th><th>Responsable</th><th>Avance</th><th>Fecha objetivo</th></tr></thead>
+            <tbody>
+              <tr><td colspan="5" class="muted" style="padding:16px;text-align:center;">Sin iniciativas. Registra tus proyectos para hacer seguimiento.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-linkedin360">
+        <div class="page-header">
+          <h2>LinkedIn360</h2>
+          <p>Panel de inteligencia comercial y networking para seguimiento de prospectos y relaciones clave.</p>
+        </div>
+        <div class="grid cols-4">
+          <div class="card"><h4>Prospectos</h4><div class="value" id="leads-stat-prospects">0</div><div class="muted">Registrados por ti</div></div>
+          <div class="card"><h4>Interacciones</h4><div class="value" id="leads-stat-interactions">0</div><div class="muted">Estimadas</div></div>
+          <div class="card"><h4>Oportunidades</h4><div class="value" id="leads-stat-opportunities">0</div><div class="muted">En pipeline</div></div>
+          <div class="card"><h4>Seguimiento pendiente</h4><div class="value" id="leads-stat-pending">0</div><div class="muted">Acciones por ejecutar</div></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h3>Prospectos / Leads</h3>
+          <form id="leads-form" class="form-grid" style="margin-bottom:16px;">
+            <div><label>Nombre</label><input id="lead-nombre" required placeholder="Nombre del contacto" /></div>
+            <div><label>Empresa</label><input id="lead-empresa" placeholder="Empresa" /></div>
+            <div><label>Cargo</label><input id="lead-cargo" placeholder="Cargo" /></div>
+            <div><label>Estado</label><input id="lead-estado" placeholder="Ej: Seguimiento" /></div>
+            <div><label>Última interacción</label><input id="lead-interaccion" placeholder="Ej: Hoy, Hace 2 días" /></div>
+            <div style="display:flex;align-items:flex-end;"><button type="submit" class="btn primary">Agregar prospecto</button></div>
+          </form>
+          <table>
+            <thead><tr><th>Nombre</th><th>Empresa</th><th>Cargo</th><th>Estado</th><th>Última interacción</th><th></th></tr></thead>
+            <tbody id="leads-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="view" id="view-admin">
+        <div class="page-header">
+          <h2>Panel de administración</h2>
+          <p>Gestión básica de usuarios, roles y actividad reciente.</p>
+        </div>
+        <div class="grid cols-3">
+          <div class="card"><h4>Usuarios activos</h4><div class="value">—</div><p class="muted">Gestiona usuarios en /admin</p></div>
+          <div class="card"><h4>Roles definidos</h4><div class="value">—</div></div>
+          <div class="card"><h4>Accesos auditados</h4><div class="value">—</div></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Última actividad</th></tr></thead>
+            <tbody>
+              <tr><td colspan="4" class="muted" style="padding:16px;text-align:center;">Sin usuarios demo. Usa el <a href="/admin">panel de administración</a> para gestionar el menú.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="./js/process-engine.js"></script>
+  <script src="./js/procedure-engine.js"></script>
+  <script src="./js/vsm-engine.js"></script>
+  <script src="./js/dashboard-ui.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+  <script>
+    let navButtons = document.querySelectorAll('.nav-btn');
+    const views = document.querySelectorAll('.view');
+    const topbarTitle = document.getElementById('topbar-title');
+    const topbarSubtitle = document.getElementById('topbar-subtitle');
+    const sidebar = document.getElementById('sidebar');
+    const mobileToggle = document.getElementById('mobileToggle');
+    const dynamicSubtitles = {};
+
+    const VIEW_MAP = {
+      diagramador: 'diagramador',
+      vsm: 'flujo-valor',
+      procedimientos: 'procedimientos',
+      'gap-analyzer': 'bpm-gap',
+      'project-ai': 'proyectai',
+      riskguard: 'riskguard',
+      'linkedin-360': 'linkedin360'
+    };
+
+    const ACCENT_BG = {
+      yellow: 'rgba(212,182,58,.15)',
+      violet: 'rgba(167,139,250,.15)',
+      blue: 'rgba(129,140,248,.15)',
+      teal: 'rgba(45,212,191,.15)',
+      pink: 'rgba(236,72,153,.15)',
+      cyan: 'rgba(34,211,238,.15)',
+      linkedin: 'rgba(59,158,255,.15)'
+    };
+
+    const ACCENT_FG = {
+      yellow: '#d4b63a',
+      violet: '#a78bfa',
+      blue: '#818cf8',
+      teal: '#2dd4bf',
+      pink: '#ec4899',
+      cyan: '#22d3ee',
+      linkedin: '#3b9eff'
+    };
+
+    function siteUrl(relativePath) {
+      const clean = String(relativePath || '').replace(/^\//, '');
+      return new URL(clean, window.location.origin + '/').href;
+    }
+
+    function sitePath(relativePath) {
+      const clean = String(relativePath || '').replace(/^\//, '');
+      return new URL(clean, window.location.origin + '/').pathname;
+    }
+
+    function resolveAppPath(relativePath) {
+      const clean = String(relativePath || '').replace(/^\.\//, '');
+      const routeMap = {
+        'admin.html': '/admin',
+        'riskguard.html': '/riskguard',
+        'general.html': '/general',
+      };
+      if (routeMap[clean]) return routeMap[clean];
+      return siteUrl(clean);
+    }
+
+    const subtitles = {
+      general: 'Centro de control operativo, riesgo y documentación.',
+      diagramador: 'Carga documentos y genera despliegues visuales de procesos.',
+      'flujo-valor': 'Mapa de tiempos, esperas y valor agregado del flujo.',
+      procedimientos: 'Construye SOPs profesionales en español.',
+      'bpm-gap': 'Detecta brechas entre procesos actuales y objetivo.',
+      proyectai: 'Seguimiento de proyectos, hitos y responsables.',
+      riskguard: 'Monitoreo de riesgos, incidentes y mitigación.',
+      linkedin360: 'Inteligencia comercial y networking operativo.',
+      admin: 'Control de usuarios, roles y actividad.',
+      'external-tool': 'Herramienta publicada en el menú dinámico.'
+    };
+
+    function bindNavButtons() {
+      navButtons = document.querySelectorAll('.nav-btn');
+    }
+
+    sidebar.addEventListener('click', (event) => {
+      const btn = event.target.closest('.nav-btn');
+      if (!btn) return;
+      if (btn.dataset.href) {
+        window.location.href = btn.dataset.href;
+        return;
+      }
+      if (btn.dataset.external) {
+        openExternalTool(btn.dataset.external, btn.dataset.title || 'Herramienta', btn.dataset.description || '');
+        return;
+      }
+      if (btn.dataset.view) activateView(btn.dataset.view);
+    });
+
+    function activateView(name) {
+      views.forEach(v => v.classList.toggle('active', v.id === `view-${name}`));
+      navButtons.forEach(b => {
+        const matchesView = b.dataset.view === name;
+        const matchesExternal = name === 'external-tool' && b.classList.contains('external-active');
+        b.classList.toggle('active', matchesView || matchesExternal);
+      });
+      const text = [...navButtons].find(b => b.dataset.view === name || (name === 'external-tool' && b.classList.contains('external-active')))?.dataset.title
+        || [...navButtons].find(b => b.dataset.view === name)?.innerText.trim()
+        || 'General';
+      topbarTitle.textContent = text;
+      topbarSubtitle.textContent = dynamicSubtitles[name] || subtitles[name] || 'RiskGuard AI Suite';
+      sidebar.classList.remove('open');
+      if (name === 'diagramador' && uploadedFiles.length) {
+        void generateDiagram();
+      }
+    }
+
+    function openExternalTool(href, title, description) {
+      document.getElementById('external-tool-title').textContent = title;
+      document.getElementById('external-tool-desc').textContent = description;
+      document.getElementById('external-tool-frame').src = href;
+      dynamicSubtitles['external-tool'] = description;
+      navButtons.forEach(b => b.classList.remove('external-active'));
+      const match = [...navButtons].find(b => b.dataset.external === href);
+      if (match) match.classList.add('external-active');
+      activateView('external-tool');
+    }
+
+    function resolveMenuItem(item) {
+      if (item.href.startsWith('./tools/') || item.href.startsWith('tools/')) {
+        return { type: 'external', href: sitePath(item.href.replace(/^\.\//, '')) };
+      }
+      if (item.href.startsWith('/tools/')) {
+        return { type: 'external', href: sitePath(item.href) };
+      }
+      if (item.href.startsWith('http')) {
+        return { type: 'link', href: item.href };
+      }
+      if (item.href === '/admin' || item.href === '/admin.html' || item.href === './admin.html') {
+        return { type: 'link', href: resolveAppPath('admin.html') };
+      }
+      if (item.href === '/riskguard' || item.href === '/riskguard.html' || item.href === './riskguard.html') {
+        return { type: 'link', href: resolveAppPath('riskguard.html') };
+      }
+      if (item.href === '/general' || item.href === '/general.html' || item.href === './general.html') {
+        return { type: 'view', view: 'general' };
+      }
+      if (item.href === '/dashboard.html' || item.href === './dashboard.html' || item.href === '/dashboard') {
+        return { type: 'link', href: resolveAppPath('dashboard.html') };
+      }
+      const view = VIEW_MAP[item.id];
+      if (view) return { type: 'view', view };
+      if (item.href && item.href !== '#') {
+        return { type: 'link', href: item.href };
+      }
+      return null;
+    }
+
+    function createNavButton(item, action) {
+      const btn = document.createElement('button');
+      btn.className = 'nav-btn';
+      btn.dataset.title = item.title;
+      btn.innerHTML = `<span>${item.title}</span><span class="nav-dot"></span>`;
+      if (action.type === 'view') btn.dataset.view = action.view;
+      if (action.type === 'external') {
+        btn.dataset.external = action.href;
+        btn.dataset.description = item.description;
+      }
+      if (action.type === 'link') btn.dataset.href = action.href;
+      dynamicSubtitles[action.view || item.id] = item.description;
+      subtitles[action.view || item.id] = item.description;
+      return btn;
+    }
+
+    function createToolCard(item, action) {
+      const card = document.createElement('div');
+      card.className = 'card tool-card';
+      const accent = item.accent || 'teal';
+      card.innerHTML = `
+        <div class="tool-icon" style="background:${ACCENT_BG[accent] || ACCENT_BG.teal}; color:${ACCENT_FG[accent] || ACCENT_FG.teal}">
+          ${item.icon ? item.icon.slice(0, 2).toUpperCase() : 'RG'}
+        </div>
+        <h4>${item.title}</h4>
+        <p class="muted">${item.description}</p>
+        <div class="tool-link">Acceder</div>
+      `;
+      card.addEventListener('click', () => {
+        if (action.type === 'view') activateView(action.view);
+        else if (action.type === 'external') openExternalTool(action.href, item.title, item.description);
+        else if (action.type === 'link') window.location.href = action.href;
+      });
+      return card;
+    }
+
+    async function loadDynamicMenu() {
+      const navHost = document.getElementById('dynamic-tools-nav');
+      const gridHost = document.getElementById('dynamic-tools-grid');
+      try {
+        const response = await fetch(siteUrl('data/menu.json') + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) throw new Error('menu.json no disponible');
+        const menu = await response.json();
+        const items = (menu.items || []).filter(item => item.published && item.id !== 'dashboard-legacy');
+
+        navHost.innerHTML = '';
+        gridHost.innerHTML = '';
+
+        items.forEach(item => {
+          const action = resolveMenuItem(item);
+          if (!action) return;
+          navHost.appendChild(createNavButton(item, action));
+          gridHost.appendChild(createToolCard(item, action));
+        });
+
+        if (!items.length) {
+          navHost.innerHTML = '<div class="menu-loading">No hay herramientas publicadas.</div>';
+          gridHost.innerHTML = '<div class="menu-loading">Publica herramientas desde /admin</div>';
+        }
+
+        bindNavButtons();
+      } catch (error) {
+        navHost.innerHTML = '<div class="menu-loading">No se pudo cargar el menú dinámico.</div>';
+        gridHost.innerHTML = '<div class="menu-loading">Usa /admin para publicar el menu.</div>';
+        console.error(error);
+      }
+    }
+
+    bindNavButtons();
+    document.querySelector('[data-view-link="general"]').addEventListener('click', () => activateView('general'));
+    mobileToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    loadDynamicMenu();
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    const fileList = document.getElementById('fileList');
+    const statusMessage = document.getElementById('statusMessage');
+    const diagramContainer = document.getElementById('diagramContainer');
+    const processSummary = document.getElementById('processSummary');
+    const generateBtn = document.getElementById('generateBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    let uploadedFiles = [];
+    let selectedFileId = null;
+
+    const allowedExtensions = ['pdf', 'txt', 'csv'];
+    let isGenerating = false;
+
+    async function extractAndDetectSteps(entry) {
+      if (!window.ProcessEngine || !entry.rawFile) {
+        entry.steps = ProcessEngine ? ProcessEngine.detectStepsFromFilename(entry.name) : detectProcessSteps(entry.name);
+        entry.extractionSource = 'nombre del archivo';
+        entry.extractedText = '';
+        return;
+      }
+      try {
+        entry.status = 'Extrayendo texto...';
+        renderFileList();
+        entry.extractedText = await ProcessEngine.extractTextFromFile(entry.rawFile);
+        entry.steps = ProcessEngine.parseProcessSteps(entry.extractedText, entry.name);
+        entry.extractionSource = entry.extractedText.length > 30 ? 'contenido del documento' : 'nombre del archivo (texto insuficiente)';
+        entry.status = entry.steps.length ? 'Analizado' : 'Sin pasos detectados';
+      } catch (error) {
+        entry.steps = ProcessEngine.detectStepsFromFilename(entry.name);
+        entry.extractionSource = 'nombre del archivo (fallback)';
+        entry.extractedText = '';
+        entry.status = 'Analizado (fallback)';
+        console.warn(error);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function createFileId() {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return 'file-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    function reportProcessError(message) {
+      statusMessage.textContent = message;
+      console.error(message);
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function detectProcessSteps(filename) {
+      if (window.ProcessEngine) return ProcessEngine.detectStepsFromFilename(filename);
+      return [{ name: 'Sin pasos detectados — sube un documento con pasos numerados', duration: null, waitTime: null, responsible: null, type: 'unknown', typeLabel: null }];
+    }
+
+    function renderFileList() {
+      fileList.innerHTML = '';
+      if (!uploadedFiles.length) {
+        statusMessage.textContent = 'Sin documentos cargados.';
+        return;
+      }
+      statusMessage.textContent = `${uploadedFiles.length} documento(s) cargado(s). Selecciona uno para generar el diagrama.`;
+      uploadedFiles.forEach(file => {
+        const el = document.createElement('div');
+        el.className = `file-item ${file.id === selectedFileId ? 'active' : ''}`;
+        el.innerHTML = `
+          <strong>${escapeHtml(file.name)}</strong>
+          <div class="muted" style="margin-top:6px; font-size:12px;">${escapeHtml(file.size)} · ${escapeHtml(file.date)}</div>
+          <div style="margin-top:8px;"><span class="badge info">${escapeHtml(file.status)}</span></div>
+        `;
+        el.addEventListener('click', () => {
+          selectedFileId = file.id;
+          renderFileList();
+          void generateDiagram();
+        });
+        fileList.appendChild(el);
+      });
+    }
+
+    function normalizeStepData(step) {
+      if (window.ProcessEngine && typeof ProcessEngine.normalizeStep === 'function') {
+        return ProcessEngine.normalizeStep(step);
+      }
+      if (typeof step === 'string') return { name: step, duration: null, waitTime: null, responsible: null, type: 'unknown', typeLabel: null };
+      return step;
+    }
+
+    function stepTypeBadgeClass(type) {
+      if (type === 'no-valor') return 'warning';
+      if (type === 'valor') return 'info';
+      if (type === 'control') return 'success';
+      return 'info';
+    }
+
+    function renderFlow(steps) {
+      const flow = document.createElement('div');
+      flow.className = 'flow-wrap';
+      flow.innerHTML = `<div class="flow"></div>`;
+      const inner = flow.querySelector('.flow');
+      steps.map(normalizeStepData).forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        const typeClass = step.type === 'no-valor' ? 'type-no-valor' : step.type === 'valor' ? 'type-valor' : step.type === 'control' ? 'type-control' : '';
+        stepEl.className = `flow-step ${typeClass}`.trim();
+        const meta = [
+          step.duration ? `<span>Duracion: ${escapeHtml(step.duration)}</span>` : '',
+          step.waitTime ? `<span>Espera: ${escapeHtml(step.waitTime)}</span>` : '',
+          step.responsible ? `<span>Responsable: ${escapeHtml(step.responsible)}</span>` : '',
+        ].filter(Boolean).join('');
+        stepEl.innerHTML = `
+          <div class="small">Paso ${index + 1}</div>
+          <strong>${escapeHtml(step.name)}</strong>
+          ${meta ? `<div class="flow-step-meta">${meta}</div>` : ''}
+          ${step.typeLabel ? `<span class="flow-step-badge badge ${stepTypeBadgeClass(step.type)}">${escapeHtml(step.typeLabel)}</span>` : ''}
+        `;
+        inner.appendChild(stepEl);
+        if (index < steps.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'flow-arrow';
+          inner.appendChild(arrow);
+        }
+      });
+      return flow;
+    }
+
+    async function generateDiagram() {
+      try {
+        if (isGenerating) return;
+        const file = uploadedFiles.find(f => f.id === selectedFileId);
+        if (!file) {
+          processSummary.textContent = 'Selecciona un documento para generar el diagrama.';
+          diagramContainer.innerHTML = `<div class="empty-state"><div><h3>No hay diagrama generado</h3><p>Sube y selecciona un documento.</p></div></div>`;
+          return;
+        }
+
+        isGenerating = true;
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generando...';
+        diagramContainer.innerHTML = `<div class="process-loading">Analizando documento y construyendo flujo...</div>`;
+
+        if (!file.steps || !file.steps.length || file.status === 'Cargado') {
+          await extractAndDetectSteps(file);
+          renderFileList();
+        }
+
+        const steps = file.steps && file.steps.length ? file.steps : detectProcessSteps(file.name);
+        const source = file.extractionSource || 'nombre del archivo';
+        processSummary.textContent = `Proceso detectado desde ${source} ("${file.name}"). Flujo de ${steps.length} pasos.`;
+
+        diagramContainer.innerHTML = '';
+        const summaryCard = document.createElement('div');
+        summaryCard.className = 'card';
+        summaryCard.style.marginTop = '16px';
+        summaryCard.innerHTML = `<h3>Resumen del proceso detectado</h3><p class="muted">Pasos extraidos en frontend (compatible con GitHub Pages). Fuente: ${escapeHtml(source)}.</p>`;
+
+        if (file.extractedText && file.extractedText.length > 30) {
+          const preview = document.createElement('p');
+          preview.className = 'extraction-note';
+          preview.textContent = `Vista previa: ${file.extractedText.slice(0, 180).replace(/\s+/g, ' ')}...`;
+          summaryCard.appendChild(preview);
+        }
+
+        const list = document.createElement('div');
+        list.className = 'list';
+        steps.map(normalizeStepData).forEach((step, idx) => {
+          const item = document.createElement('div');
+          item.className = 'list-item';
+          const details = [step.duration, step.waitTime, step.responsible].filter(Boolean).join(' · ');
+          item.innerHTML = `
+            <span>${idx + 1}. ${escapeHtml(step.name)}${details ? ` <span class="muted">(${escapeHtml(details)})</span>` : ''}</span>
+            <span class="badge ${stepTypeBadgeClass(step.type)}">${escapeHtml(step.typeLabel || 'Detectado')}</span>
+          `;
+          list.appendChild(item);
+        });
+        summaryCard.appendChild(renderFlow(steps));
+        summaryCard.appendChild(list);
+        diagramContainer.appendChild(summaryCard);
+      } catch (error) {
+        reportProcessError('No se pudo generar el diagrama del proceso.');
+      } finally {
+        isGenerating = false;
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generar diagrama';
+      }
+    }
+
+    async function handleFiles(fileListObj) {
+      try {
+        const files = [...fileListObj];
+        const valid = files.filter(file => {
+          const parts = file.name.split('.');
+          if (parts.length < 2) return false;
+          const ext = parts.pop().toLowerCase();
+          return allowedExtensions.includes(ext);
+        });
+        if (!valid.length) {
+          statusMessage.textContent = 'No se cargaron archivos validos. Usa PDF, TXT o CSV.';
+          return;
+        }
+
+        for (const file of valid) {
+          const entry = {
+            id: createFileId(),
+            name: file.name,
+            size: formatSize(file.size),
+            date: new Date().toLocaleString('es-ES'),
+            status: 'Cargado',
+            rawFile: file,
+            extractedText: '',
+            steps: [],
+            extractionSource: ''
+          };
+          uploadedFiles.unshift(entry);
+          selectedFileId = entry.id;
+          renderFileList();
+          await extractAndDetectSteps(entry);
+        }
+
+        renderFileList();
+        await generateDiagram();
+        fileInput.value = '';
+      } catch (error) {
+        reportProcessError('Error al procesar los documentos cargados.');
+      }
+    }
+
+    if (fileInput && uploadZone && selectFileBtn && generateBtn && clearBtn && fileList && statusMessage && diagramContainer) {
+    selectFileBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    uploadZone.addEventListener('click', (e) => {
+      if (e.target.closest('#selectFileBtn') || e.target.closest('#fileInput')) return;
+      fileInput.click();
+    });
+
+    uploadZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files?.length) handleFiles(e.target.files);
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => uploadZone.addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.add('drag');
+    }));
+    ['dragleave', 'drop'].forEach(evt => uploadZone.addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.remove('drag');
+    }));
+    uploadZone.addEventListener('drop', e => {
+      if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files);
+    });
+
+    generateBtn.addEventListener('click', () => void generateDiagram());
+    clearBtn.addEventListener('click', () => {
+      uploadedFiles = [];
+      selectedFileId = null;
+      fileInput.value = '';
+      renderFileList();
+      void generateDiagram();
+    });
+    }
+
+    const generarProcedimiento = document.getElementById('generarProcedimiento');
+    const copiarProcedimiento = document.getElementById('copiarProcedimiento');
+    const procedimientoOutput = document.getElementById('procedimientoOutput');
+    const procedimientoDocumento = document.getElementById('procedimientoDocumento');
+    const procedimientoDiagrama = document.getElementById('procedimientoDiagrama');
+    const procedimientoStatus = document.getElementById('procedimientoStatus');
+
+    function renderProcedureDocument(proc) {
+      procedimientoDocumento.innerHTML = `
+        <div class="proc-section">
+          <h4>${escapeHtml(proc.nombre)}</h4>
+          <p class="muted">Procedimiento operativo estandar (SOP)</p>
+        </div>
+        <div class="proc-section">
+          <h4>Objetivo</h4>
+          <p>${escapeHtml(proc.objetivo)}</p>
+        </div>
+        <div class="proc-section">
+          <h4>Alcance</h4>
+          <p>${escapeHtml(proc.alcance || 'No especificado.')}</p>
+        </div>
+        <div class="proc-section">
+          <h4>Responsable</h4>
+          <p>${escapeHtml(proc.responsable || 'No especificado.')}</p>
+        </div>
+        <div class="proc-section">
+          <h4>Entradas</h4>
+          <p>${escapeHtml(proc.entradas || 'No especificado.').replace(/,\s*/g, '<br>')}</p>
+        </div>
+        <div class="proc-section">
+          <h4>Salidas</h4>
+          <p>${escapeHtml(proc.salidas || 'No especificado.').replace(/,\s*/g, '<br>')}</p>
+        </div>
+        <div class="proc-section">
+          <h4>Pasos del procedimiento</h4>
+          <div class="proc-steps">
+            ${proc.pasos.map((step, index) => `
+              <div class="proc-step-item">
+                <strong>${index + 1}. ${escapeHtml(step.descripcion)}</strong>
+                ${step.responsable || step.entrada || step.salida ? `
+                  <div class="proc-step-meta">
+                    ${step.responsable ? `Responsable: ${escapeHtml(step.responsable)}` : ''}
+                    ${step.entrada ? `${step.responsable ? ' · ' : ''}Entrada: ${escapeHtml(step.entrada)}` : ''}
+                    ${step.salida ? `${step.responsable || step.entrada ? ' · ' : ''}Salida: ${escapeHtml(step.salida)}` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      procedimientoDocumento.hidden = false;
+    }
+
+    function renderProcedureFlow(nodes) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flow-wrap';
+      wrap.innerHTML = '<div class="flow"></div>';
+      const inner = wrap.querySelector('.flow');
+
+      nodes.forEach((node, index) => {
+        const stepEl = document.createElement('div');
+        if (node.type === 'start') {
+          stepEl.className = 'flow-step flow-start';
+          stepEl.innerHTML = '<div class="small">Inicio</div><strong>Inicio</strong>';
+        } else if (node.type === 'end') {
+          stepEl.className = 'flow-step flow-end';
+          stepEl.innerHTML = '<div class="small">Cierre</div><strong>Fin</strong>';
+        } else {
+          stepEl.className = 'flow-step type-valor';
+          stepEl.innerHTML = `
+            <div class="small">Paso ${node.index}</div>
+            <strong>${escapeHtml(node.label)}</strong>
+            ${node.responsable ? `<div class="flow-step-meta"><span>Responsable: ${escapeHtml(node.responsable)}</span></div>` : ''}
+          `;
+        }
+        inner.appendChild(stepEl);
+        if (index < nodes.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'flow-arrow';
+          inner.appendChild(arrow);
+        }
+      });
+
+      procedimientoDiagrama.innerHTML = '<div class="proc-diagram-title">Diagrama de flujo del procedimiento</div>';
+      procedimientoDiagrama.appendChild(wrap);
+      procedimientoDiagrama.hidden = false;
+    }
+
+    function generateProcedure() {
+      if (!window.ProcedureEngine) {
+        procedimientoStatus.textContent = 'Error: motor de procedimientos no cargado.';
+        procedimientoStatus.className = 'proc-status error';
+        return;
+      }
+
+      const fields = {
+        nombre: document.getElementById('procNombre')?.value || '',
+        responsable: document.getElementById('procResponsable')?.value || '',
+        objetivo: document.getElementById('procObjetivo')?.value || '',
+        alcance: document.getElementById('procAlcance')?.value || '',
+        entradas: document.getElementById('procEntradas')?.value || '',
+        salidas: document.getElementById('procSalidas')?.value || '',
+        pasos: document.getElementById('procPasos')?.value || '',
+      };
+
+      const proc = ProcedureEngine.buildProcedure(fields);
+      const errors = ProcedureEngine.validateProcedure(proc);
+
+      if (errors.length) {
+        procedimientoStatus.textContent = errors.join(' ');
+        procedimientoStatus.className = 'proc-status error';
+        procedimientoDocumento.hidden = true;
+        procedimientoDiagrama.hidden = true;
+        procedimientoOutput.textContent = '';
+        return;
+      }
+
+      const text = ProcedureEngine.formatDocumentText(proc);
+      const nodes = ProcedureEngine.buildFlowNodes(proc);
+
+      procedimientoOutput.textContent = text;
+      renderProcedureDocument(proc);
+      renderProcedureFlow(nodes);
+
+      procedimientoStatus.textContent = `Procedimiento "${proc.nombre}" generado con ${proc.pasos.length} paso(s).`;
+      procedimientoStatus.className = 'proc-status ok';
+    }
+
+    if (generarProcedimiento) {
+      generarProcedimiento.addEventListener('click', generateProcedure);
+    }
+
+    if (copiarProcedimiento && procedimientoOutput) {
+      copiarProcedimiento.addEventListener('click', async () => {
+        if (!procedimientoOutput.textContent.trim()) {
+          copiarProcedimiento.textContent = 'Sin contenido';
+          setTimeout(() => { copiarProcedimiento.textContent = 'Copiar resultado'; }, 1500);
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(procedimientoOutput.textContent);
+          copiarProcedimiento.textContent = 'Copiado';
+          setTimeout(() => { copiarProcedimiento.textContent = 'Copiar resultado'; }, 1500);
+        } catch {
+          copiarProcedimiento.textContent = 'No disponible';
+          setTimeout(() => { copiarProcedimiento.textContent = 'Copiar resultado'; }, 1500);
+        }
+      });
+    }
+
+    const vsmTableBody = document.getElementById('vsmTableBody');
+    const generarVsmBtn = document.getElementById('generarVsm');
+    const vsmAddRowBtn = document.getElementById('vsmAddRow');
+    const vsmStatus = document.getElementById('vsmStatus');
+    const vsmOutput = document.getElementById('vsmOutput');
+    const vsmMetrics = document.getElementById('vsmMetrics');
+    const vsmBottleneck = document.getElementById('vsmBottleneck');
+    const vsmDiagram = document.getElementById('vsmDiagram');
+
+    function createVsmRow(stage) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input data-field="etapa" value="${escapeHtml(stage.etapa || '')}" placeholder="Nombre de etapa" /></td>
+        <td><input data-field="ciclo" value="${escapeHtml(stage.ciclo || '')}" placeholder="15 min" /></td>
+        <td><input data-field="espera" value="${escapeHtml(stage.espera || '')}" placeholder="10 min" /></td>
+        <td><input data-field="responsable" value="${escapeHtml(stage.responsable || '')}" placeholder="Responsable" /></td>
+        <td>
+          <select data-field="valor">
+            <option value="valor" ${stage.valor !== 'no-valor' ? 'selected' : ''}>Valor agregado</option>
+            <option value="no-valor" ${stage.valor === 'no-valor' ? 'selected' : ''}>No valor agregado</option>
+          </select>
+        </td>
+        <td><button type="button" class="btn ghost vsm-remove-row" title="Eliminar etapa">✕</button></td>
+      `;
+      tr.querySelector('.vsm-remove-row')?.addEventListener('click', () => {
+        if (vsmTableBody.querySelectorAll('tr').length <= 1) {
+          vsmStatus.textContent = 'Debe quedar al menos una etapa en la tabla.';
+          vsmStatus.className = 'vsm-status error';
+          return;
+        }
+        tr.remove();
+      });
+      return tr;
+    }
+
+    function emptyVsmStage() {
+      return { etapa: '', ciclo: '', espera: '', responsable: '', valor: 'valor' };
+    }
+
+    function readVsmTableRows() {
+      if (!vsmTableBody) return [];
+      return [...vsmTableBody.querySelectorAll('tr')].map((row) => ({
+        etapa: row.querySelector('[data-field="etapa"]')?.value || '',
+        ciclo: row.querySelector('[data-field="ciclo"]')?.value || '',
+        espera: row.querySelector('[data-field="espera"]')?.value || '',
+        responsable: row.querySelector('[data-field="responsable"]')?.value || '',
+        valor: row.querySelector('[data-field="valor"]')?.value || 'valor',
+      }));
+    }
+
+    function initVsmTable() {
+      if (!vsmTableBody || !window.VsmEngine) return;
+      vsmTableBody.innerHTML = '';
+      vsmTableBody.appendChild(createVsmRow(emptyVsmStage()));
+    }
+
+    function renderVsmMetrics(metrics) {
+      vsmMetrics.innerHTML = `
+        <div class="vsm-metric"><div class="label">Lead time</div><div class="value">${escapeHtml(metrics.leadTimeLabel)}</div></div>
+        <div class="vsm-metric va"><div class="label">Valor agregado</div><div class="value">${escapeHtml(metrics.valueAddedLabel)}</div></div>
+        <div class="vsm-metric nva"><div class="label">No valor agregado</div><div class="value">${escapeHtml(metrics.nonValueAddedLabel)}</div></div>
+        <div class="vsm-metric"><div class="label">% valor agregado</div><div class="value">${escapeHtml(metrics.valueAddedPctLabel)}</div></div>
+        <div class="vsm-metric"><div class="label">Tiempo total ciclo</div><div class="value">${escapeHtml(metrics.totalCycleLabel)}</div></div>
+        <div class="vsm-metric"><div class="label">Tiempo total espera</div><div class="value">${escapeHtml(metrics.totalWaitLabel)}</div></div>
+      `;
+    }
+
+    function renderVsmDiagram(stages) {
+      const timeline = document.createElement('div');
+      timeline.className = 'vsm-timeline-wrap';
+      timeline.innerHTML = '<div class="vsm-timeline"></div>';
+      const inner = timeline.querySelector('.vsm-timeline');
+
+      stages.forEach((stage, index) => {
+        const unit = document.createElement('div');
+        unit.className = 'vsm-unit';
+
+        const process = document.createElement('div');
+        process.className = `vsm-process ${stage.valor === 'no-valor' ? 'nva' : 'va'}`;
+        process.innerHTML = `
+          <div class="name">${escapeHtml(stage.etapa)}</div>
+          <div class="time">Ciclo: ${escapeHtml(stage.ciclo || VsmEngine.formatMinutes(stage.cicloMin))}</div>
+          <div class="time">Responsable: ${escapeHtml(stage.responsable || 'N/D')}</div>
+          <span class="badge-inline badge ${stage.valor === 'no-valor' ? 'warning' : 'info'}">${escapeHtml(stage.valorLabel)}</span>
+        `;
+        unit.appendChild(process);
+        inner.appendChild(unit);
+
+        if (index < stages.length - 1) {
+          const wait = document.createElement('div');
+          wait.className = 'vsm-wait';
+          wait.innerHTML = `<strong>${escapeHtml(stage.espera || VsmEngine.formatMinutes(stage.esperaMin))}</strong>Espera`;
+          inner.appendChild(wait);
+        }
+      });
+
+      vsmDiagram.innerHTML = '';
+      vsmDiagram.appendChild(timeline);
+    }
+
+    function generateVsm() {
+      if (!window.VsmEngine) {
+        vsmStatus.textContent = 'Error: motor VSM no cargado.';
+        vsmStatus.className = 'vsm-status error';
+        return;
+      }
+
+      const stages = VsmEngine.parseStages(readVsmTableRows());
+      const errors = VsmEngine.validateStages(stages);
+
+      if (errors.length) {
+        vsmStatus.textContent = errors.join(' ');
+        vsmStatus.className = 'vsm-status error';
+        vsmOutput.hidden = true;
+        return;
+      }
+
+      const metrics = VsmEngine.calculateMetrics(stages);
+      const bottleneck = VsmEngine.detectBottleneck(stages);
+
+      renderVsmMetrics(metrics);
+      vsmBottleneck.innerHTML = `<strong>Cuello de botella:</strong> ${escapeHtml(bottleneck.label)}`;
+      renderVsmDiagram(stages);
+
+      vsmOutput.hidden = false;
+      vsmStatus.textContent = `VSM generado con ${stages.length} etapa(s). Lead time: ${metrics.leadTimeLabel}.`;
+      vsmStatus.className = 'vsm-status ok';
+    }
+
+    if (vsmTableBody && window.VsmEngine) initVsmTable();
+    if (generarVsmBtn) generarVsmBtn.addEventListener('click', generateVsm);
+    if (vsmAddRowBtn) {
+      vsmAddRowBtn.addEventListener('click', () => {
+        vsmTableBody?.appendChild(createVsmRow(emptyVsmStage()));
+      });
+    }
+    const vsmClearRowsBtn = document.getElementById('vsmClearRows');
+    if (vsmClearRowsBtn) {
+      vsmClearRowsBtn.addEventListener('click', () => {
+        initVsmTable();
+        vsmOutput.hidden = true;
+        vsmStatus.textContent = 'Tabla reiniciada. Agrega etapas y pulsa "Generar VSM".';
+        vsmStatus.className = 'vsm-status muted';
+      });
+    }
+
+    if (window.DashboardUI) DashboardUI.initLeadsSection();
+  </script>
+</body>
+</html>
